@@ -55,7 +55,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 public class AuthSessionHandler implements LimboSessionHandler {
@@ -63,7 +63,7 @@ public class AuthSessionHandler implements LimboSessionHandler {
   private static final CodeVerifier TOTP_CODE_VERIFIER = new DefaultCodeVerifier(new DefaultCodeGenerator(), new SystemTimeProvider());
   private static final BCrypt.Verifyer HASH_VERIFIER = BCrypt.verifyer();
   private static final BCrypt.Hasher HASHER = BCrypt.withDefaults();
-  private static final Set<Function<String, Boolean>> commandHook = new HashSet<>();
+  private static final Set<BiFunction<String, AuthSessionHandler, Boolean>> commandHook = new HashSet<>();
 
   private static BossBar.Color bossbarColor;
   private static BossBar.Overlay bossbarOverlay;
@@ -127,11 +127,11 @@ public class AuthSessionHandler implements LimboSessionHandler {
     this.playerInfo = playerInfo;
   }
 
-  public static void registerCommandHook(Function<String, Boolean> func) {
+  public static void registerCommandHook(BiFunction<String, AuthSessionHandler, Boolean> func) {
     commandHook.add(func);
   }
 
-  public static void unregisterCommandHook(Function<String, Boolean> func) {
+  public static void unregisterCommandHook(BiFunction<String, AuthSessionHandler, Boolean> func) {
     commandHook.remove(func);
   }
 
@@ -272,8 +272,8 @@ public class AuthSessionHandler implements LimboSessionHandler {
         }
       }
     }
-    for (Function<String, Boolean> func : commandHook) {
-      if (func.apply(message)) {
+    for (var func : commandHook) {
+      if (func.apply(message, this)) {
         return;
       }
     }
