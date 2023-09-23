@@ -28,15 +28,6 @@ import dev.samstevens.totp.code.DefaultCodeVerifier;
 import dev.samstevens.totp.time.SystemTimeProvider;
 import io.netty.buffer.ByteBuf;
 import io.whitfin.siphash.SipHasher;
-import java.nio.charset.StandardCharsets;
-import java.sql.SQLException;
-import java.text.MessageFormat;
-import java.util.List;
-import java.util.Locale;
-import java.util.UUID;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 import net.elytrium.commons.kyori.serialization.Serializer;
 import net.elytrium.limboapi.api.Limbo;
 import net.elytrium.limboapi.api.LimboSessionHandler;
@@ -54,11 +45,25 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
+import java.nio.charset.StandardCharsets;
+import java.sql.SQLException;
+import java.text.MessageFormat;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 public class AuthSessionHandler implements LimboSessionHandler {
 
   private static final CodeVerifier TOTP_CODE_VERIFIER = new DefaultCodeVerifier(new DefaultCodeGenerator(), new SystemTimeProvider());
   private static final BCrypt.Verifyer HASH_VERIFIER = BCrypt.verifyer();
   private static final BCrypt.Hasher HASHER = BCrypt.withDefaults();
+  private static final Set<Function<String, Boolean>> commandHook = new HashSet<>();
 
   private static BossBar.Color bossbarColor;
   private static BossBar.Overlay bossbarOverlay;
@@ -120,6 +125,14 @@ public class AuthSessionHandler implements LimboSessionHandler {
     this.proxyPlayer = proxyPlayer;
     this.plugin = plugin;
     this.playerInfo = playerInfo;
+  }
+
+  public void registerCommandHook(Function<String, Boolean> func) {
+    commandHook.add(func);
+  }
+
+  public void unregisterCommandHook(Function<String, Boolean> func) {
+    commandHook.remove(func);
   }
 
   @Override
@@ -257,6 +270,11 @@ public class AuthSessionHandler implements LimboSessionHandler {
         } else {
           this.checkBruteforceAttempts();
         }
+      }
+    }
+    for (Function<String, Boolean> func : commandHook) {
+      if (func.apply(message)) {
+        return;
       }
     }
 
