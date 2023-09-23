@@ -127,11 +127,11 @@ public class AuthSessionHandler implements LimboSessionHandler {
     this.playerInfo = playerInfo;
   }
 
-  public void registerCommandHook(Function<String, Boolean> func) {
+  public static void registerCommandHook(Function<String, Boolean> func) {
     commandHook.add(func);
   }
 
-  public void unregisterCommandHook(Function<String, Boolean> func) {
+  public static void unregisterCommandHook(Function<String, Boolean> func) {
     commandHook.remove(func);
   }
 
