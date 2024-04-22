@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 - 2023 Elytrium
+ * Copyright (C) 2021 - 2024 Elytrium
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -352,6 +352,7 @@ public class Settings extends YamlConfig {
 
       public String RELOAD = "{PRFX} &aReloaded successfully!";
       public String ERROR_OCCURRED = "{PRFX} &cAn internal error has occurred!";
+      public String RATELIMITED = "{PRFX} &cPlease wait before next usage!";
       public String DATABASE_ERROR_KICK = "{PRFX} &cA database error has occurred!";
 
       public String NOT_PLAYER = "{PRFX} &cСonsole is not allowed to execute this command!";

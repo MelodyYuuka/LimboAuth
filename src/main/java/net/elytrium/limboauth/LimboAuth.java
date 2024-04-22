@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 - 2023 Elytrium
+ * Copyright (C) 2021 - 2024 Elytrium
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -48,6 +48,8 @@ import com.velocitypowered.api.proxy.messages.ChannelIdentifier;
 import com.velocitypowered.api.proxy.messages.LegacyChannelIdentifier;
 import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier;
 import com.velocitypowered.api.scheduler.ScheduledTask;
+import com.velocitypowered.proxy.util.ratelimit.Ratelimiter;
+import com.velocitypowered.proxy.util.ratelimit.Ratelimiters;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.whitfin.siphash.SipHasher;
 import java.io.File;
@@ -132,6 +134,8 @@ import org.slf4j.Logger;
     }
 )
 public class LimboAuth {
+
+  public static final Ratelimiter RATELIMITER = Ratelimiters.createWithMilliseconds(5000);
 
   // Architectury API appends /541f59e4256a337ea252bc482a009d46 to the channel name, that is a UUID.nameUUIDFromBytes from the TokenMessage class name
   private static final ChannelIdentifier MOD_CHANNEL = MinecraftChannelIdentifier.create("limboauth", "mod/541f59e4256a337ea252bc482a009d46");
@@ -317,7 +321,14 @@ public class LimboAuth {
     this.nicknameValidationPattern = Pattern.compile(Settings.IMP.MAIN.ALLOWED_NICKNAME_REGEX);
 
     try {
-      TableUtils.createTableIfNotExists(this.connectionSource, RegisteredPlayer.class);
+      try {
+        TableUtils.createTableIfNotExists(this.connectionSource, RegisteredPlayer.class);
+      } catch (SQLException e) {
+        if (!e.getMessage().contains("CREATE INDEX")) {
+          throw e;
+        }
+      }
+
       this.playerDao = DaoManager.createDao(this.connectionSource, RegisteredPlayer.class);
       this.migrateDb(this.playerDao);
     } catch (SQLException e) {
@@ -506,8 +517,12 @@ public class LimboAuth {
   }
 
   public void removePlayerFromCache(String username) {
-    this.cachedAuthChecks.remove(username.toLowerCase(Locale.ROOT));
-    this.premiumCache.remove(username.toLowerCase(Locale.ROOT));
+    this.removePlayerFromCacheLowercased(username.toLowerCase(Locale.ROOT));
+  }
+
+  public void removePlayerFromCacheLowercased(String username) {
+    this.cachedAuthChecks.remove(username);
+    this.premiumCache.remove(username);
   }
 
   public boolean needAuth(Player player) {
