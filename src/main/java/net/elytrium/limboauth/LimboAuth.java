@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 - 2024 Elytrium
+ * Copyright (C) 2021 - 2025 Elytrium
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -137,7 +137,7 @@ import org.slf4j.Logger;
 )
 public class LimboAuth {
 
-  public static final Ratelimiter RATELIMITER = Ratelimiters.createWithMilliseconds(5000);
+  public static final Ratelimiter<InetAddress> RATELIMITER = Ratelimiters.createWithMilliseconds(5000);
 
   // Architectury API appends /541f59e4256a337ea252bc482a009d46 to the channel name, that is a UUID.nameUUIDFromBytes from the TokenMessage class name
   private static final ChannelIdentifier MOD_CHANNEL = MinecraftChannelIdentifier.create("limboauth", "mod/541f59e4256a337ea252bc482a009d46");
@@ -1085,6 +1085,7 @@ public class LimboAuth {
       this.uuid = uuid;
     }
 
+    @SuppressFBWarnings("CT_CONSTRUCTOR_THROW")
     public PremiumResponse(PremiumState state, String uuid) {
       this.state = state;
       if (uuid.contains("-")) {
