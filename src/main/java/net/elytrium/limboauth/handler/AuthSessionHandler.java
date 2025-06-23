@@ -98,6 +98,11 @@ public class AuthSessionHandler implements LimboSessionHandler {
   private static MigrationHash migrationHash;
 
   private final Dao<RegisteredPlayer, String> playerDao;
+
+  public Player getProxyPlayer() {
+    return proxyPlayer;
+  }
+
   private final Player proxyPlayer;
   private final LimboAuth plugin;
 
