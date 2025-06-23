@@ -84,7 +84,6 @@ import java.util.stream.Stream;
 import net.elytrium.commons.kyori.serialization.Serializer;
 import net.elytrium.commons.kyori.serialization.Serializers;
 import net.elytrium.commons.utils.reflection.ReflectionException;
-import net.elytrium.commons.utils.updates.UpdatesChecker;
 import net.elytrium.limboapi.api.Limbo;
 import net.elytrium.limboapi.api.LimboFactory;
 import net.elytrium.limboapi.api.chunk.VirtualWorld;
@@ -229,15 +228,6 @@ public class LimboAuth {
     metrics.addCustomChart(new SimplePie("dimension", () -> String.valueOf(Settings.IMP.MAIN.DIMENSION)));
     metrics.addCustomChart(new SimplePie("save_uuid", () -> String.valueOf(Settings.IMP.MAIN.SAVE_UUID)));
     metrics.addCustomChart(new SingleLineChart("registered_players", () -> Math.toIntExact(this.playerDao.countOf())));
-
-//    this.server.getScheduler().buildTask(this, () -> {
-//      if (!UpdatesChecker.checkVersionByURL("https://raw.githubusercontent.com/Elytrium/LimboAuth/master/VERSION", Settings.IMP.VERSION)) {
-//        LOGGER.error("****************************************");
-//        LOGGER.warn("The new LimboAuth update was found, please update.");
-//        LOGGER.error("https://github.com/Elytrium/LimboAuth/releases/");
-//        LOGGER.error("****************************************");
-//      }
-//    }).schedule();
   }
 
   @SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH", justification = "LEGACY_AMPERSAND can't be null in velocity.")

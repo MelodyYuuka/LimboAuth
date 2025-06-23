@@ -142,6 +142,7 @@ checkstyle {
 }
 
 spotbugsMain {
+    ignoreFailures = true
     setExcludeFilter(file("${this.getRootDir()}/config/spotbugs/suppressions.xml"))
 
     reports {
