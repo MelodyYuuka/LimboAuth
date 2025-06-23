@@ -100,7 +100,7 @@ public class AuthSessionHandler implements LimboSessionHandler {
   private final Dao<RegisteredPlayer, String> playerDao;
 
   public Player getProxyPlayer() {
-    return proxyPlayer;
+    return this.proxyPlayer;
   }
 
   private final Player proxyPlayer;
