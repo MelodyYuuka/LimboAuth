@@ -44,15 +44,16 @@ import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.jetbrains.annotations.NotNull;
 
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 import java.util.UUID;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -67,7 +68,7 @@ public class AuthSessionHandler implements LimboSessionHandler {
     boolean execute(String message, AuthSessionHandler handler);
   }
 
-  private static final Set<CommandHook> commandHook = new HashSet<>();
+  private static final Map<String, CommandHook> commandHook = new HashMap<>();
 
   private static Component ratelimited;
   private static BossBar.Color bossbarColor;
@@ -137,12 +138,12 @@ public class AuthSessionHandler implements LimboSessionHandler {
     this.playerInfo = playerInfo;
   }
 
-  public static void registerCommandHook(CommandHook func) {
-    commandHook.add(func);
+  public static void registerCommandHook(@NotNull String command, @NotNull CommandHook func) {
+    commandHook.put(command, func);
   }
 
-  public static void unregisterCommandHook(CommandHook func) {
-    commandHook.remove(func);
+  public static CommandHook unregisterCommandHook(@NotNull String command) {
+    return commandHook.remove(command);
   }
 
   @Override
@@ -287,11 +288,13 @@ public class AuthSessionHandler implements LimboSessionHandler {
         } else {
           this.checkBruteforceAttempts();
         }
-      }
-    }
-    for (var func : commandHook) {
-      if (func.execute(message, this)) {
-        return;
+      } else {
+        if (commandHook.containsKey(args[0])) {
+          CommandHook func = commandHook.get(args[0]);
+          if (func.execute(message, this)) {
+            return;
+          }
+        }
       }
     }
 
