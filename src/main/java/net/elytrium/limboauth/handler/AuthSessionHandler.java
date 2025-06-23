@@ -63,7 +63,12 @@ public class AuthSessionHandler implements LimboSessionHandler {
   public static final CodeVerifier TOTP_CODE_VERIFIER = new DefaultCodeVerifier(new DefaultCodeGenerator(), new SystemTimeProvider());
   private static final BCrypt.Verifyer HASH_VERIFIER = BCrypt.verifyer();
   private static final BCrypt.Hasher HASHER = BCrypt.withDefaults();
-  private static final Set<BiFunction<String, AuthSessionHandler, Boolean>> commandHook = new HashSet<>();
+
+  public interface CommandHook {
+    boolean execute(String message, AuthSessionHandler handler);
+  }
+
+  private static final Set<CommandHook> commandHook = new HashSet<>();
 
   private static Component ratelimited;
   private static BossBar.Color bossbarColor;
@@ -133,11 +138,11 @@ public class AuthSessionHandler implements LimboSessionHandler {
     this.playerInfo = playerInfo;
   }
 
-  public static void registerCommandHook(BiFunction<String, AuthSessionHandler, Boolean> func) {
+  public static void registerCommandHook(CommandHook func) {
     commandHook.add(func);
   }
 
-  public static void unregisterCommandHook(BiFunction<String, AuthSessionHandler, Boolean> func) {
+  public static void unregisterCommandHook(CommandHook func) {
     commandHook.remove(func);
   }
 
@@ -286,7 +291,7 @@ public class AuthSessionHandler implements LimboSessionHandler {
       }
     }
     for (var func : commandHook) {
-      if (func.apply(message, this)) {
+      if (func.execute(message, this)) {
         return;
       }
     }
